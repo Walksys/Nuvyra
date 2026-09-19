@@ -1,6 +1,6 @@
-# JTG Panel
+# Nuvyra Panel
 
-Made by Jishnu
+Made by Walksys
 
 ## Quick Automated Setup (Recommended)
 
@@ -23,8 +23,8 @@ Menu Options:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/JishnuTheGamer/Jtg.git
-   cd Jtg
+   git clone https://github.com/Walksys/nuvyra.git
+   cd nuvyra
    ```
 
 2. Install dependencies:

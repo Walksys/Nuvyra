@@ -1,6 +1,6 @@
 #!/bin/bash
 # =========================================================
-# JTG Panel - Automated Uninstall Script
+# Nuvyra Panel - Automated Uninstall Script
 # =========================================================
 
 # Ensure running in bash
@@ -18,8 +18,8 @@ NC='\033[0m'
 
 if [ -f "package.json" ]; then
     WORK_DIR="."
-elif [ -d "Jtg" ] && [ -f "Jtg/package.json" ]; then
-    WORK_DIR="Jtg"
+elif [ -d "nuvyra" ] && [ -f "nuvyra/package.json" ]; then
+    WORK_DIR="nuvyra"
 else
     WORK_DIR="."
 fi
@@ -31,7 +31,7 @@ print_banner() {
     fi
     echo -e "${CYAN}${BOLD}"
     echo "╔══════════════════════════════════════════════╗"
-    echo "║             JTG PANEL UNINSTALLER            ║"
+    echo "║             Nuvyra PANEL UNINSTALLER            ║"
     echo "╠══════════════════════════════════════════════╣"
     echo -e "${NC}"
 }
@@ -53,7 +53,7 @@ run_pm2() {
 execute_step() {
     local msg="$1"
     shift
-    local step_id="jtg_uninst_$RANDOM"
+    local step_id="nuvyra_uninst_$RANDOM"
     local log_file="/tmp/${step_id}.log"
     
     printf "  ${CYAN}→${NC} %-42s " "$msg"
@@ -109,9 +109,9 @@ RUNTIME="Unknown"
 if [ "$UN_CHOICE" = "1" ]; then RUNTIME="Docker"; fi
 if [ "$UN_CHOICE" = "2" ]; then RUNTIME="Local Node.js"; fi
 if [ "$UN_CHOICE" = "3" ]; then
-    if (run_pm2 list 2>/dev/null | grep -q "jtg-main") || (run_pm2 list 2>/dev/null | grep -q "jtg-admin") || (run_pm2 list 2>/dev/null | grep -q "jtg-panel"); then
+    if (run_pm2 list 2>/dev/null | grep -q "nuvyra-main") || (run_pm2 list 2>/dev/null | grep -q "nuvyra-admin") || (run_pm2 list 2>/dev/null | grep -q "nuvyra-panel"); then
         RUNTIME="Local Node.js"
-    elif command -v docker &> /dev/null && docker ps -a --format '{{.Names}}' | grep -qE "^(jtg-main|jtg-admin)$"; then
+    elif command -v docker &> /dev/null && docker ps -a --format '{{.Names}}' | grep -qE "^(nuvyra-main|nuvyra-admin)$"; then
         RUNTIME="Docker"
     else
         RUNTIME="Local Node.js"
@@ -131,10 +131,10 @@ fi
 
 print_banner
 echo "║ Runtime: $RUNTIME"
-echo "║ Panel: JTG Panel"
+echo "║ Panel: Nuvyra Panel"
 echo "║ Owner: $OWNER"
 echo "║"
-echo "║ Are you sure you want to uninstall JTG Panel?║"
+echo "║ Are you sure you want to uninstall Nuvyra Panel?║"
 echo "║ 1) Yes, continue                             ║"
 echo "║ 2) No, cancel                                ║"
 echo "╚══════════════════════════════════════════════╝"
@@ -164,12 +164,12 @@ stop_docker() {
     elif command -v docker-compose &> /dev/null; then
         docker-compose down || true
     fi
-    $DOCKER_CLI rm -f jtg-main jtg-admin 2>/dev/null || true
-    $DOCKER_CLI rmi jtg-main jtg-admin 2>/dev/null || true
+    $DOCKER_CLI rm -f nuvyra-main nuvyra-admin 2>/dev/null || true
+    $DOCKER_CLI rmi nuvyra-main nuvyra-admin 2>/dev/null || true
 }
 
 stop_pm2() {
-    run_pm2 delete jtg-main jtg-admin jtg-panel 2>/dev/null || true
+    run_pm2 delete nuvyra-main nuvyra-admin nuvyra-panel 2>/dev/null || true
     run_pm2 save --force 2>/dev/null || true
 }
 
@@ -177,25 +177,25 @@ clean_files() {
     rm -rf node_modules dist .logs package-lock.json
 }
 
-delete_jtg_directory() {
+delete_nuvyra_directory() {
     local dirs_to_remove=()
-    if [ -n "$ORIGINAL_CALL_DIR" ] && [ -d "$ORIGINAL_CALL_DIR/Jtg" ]; then dirs_to_remove+=("$ORIGINAL_CALL_DIR/Jtg"); fi
-    if [ -n "$ORIGINAL_CALL_DIR" ] && [ -d "$ORIGINAL_CALL_DIR/jtg" ]; then dirs_to_remove+=("$ORIGINAL_CALL_DIR/jtg"); fi
-    if [ -d "Jtg" ]; then dirs_to_remove+=("$(pwd)/Jtg"); fi
-    if [ -d "jtg" ]; then dirs_to_remove+=("$(pwd)/jtg"); fi
-    if [ -d "../Jtg" ]; then dirs_to_remove+=("$(cd .. 2>/dev/null && pwd)/Jtg"); fi
-    if [ -d "../jtg" ]; then dirs_to_remove+=("$(cd .. 2>/dev/null && pwd)/jtg"); fi
+    if [ -n "$ORIGINAL_CALL_DIR" ] && [ -d "$ORIGINAL_CALL_DIR/nuvyra" ]; then dirs_to_remove+=("$ORIGINAL_CALL_DIR/nuvyra"); fi
+    if [ -n "$ORIGINAL_CALL_DIR" ] && [ -d "$ORIGINAL_CALL_DIR/nuvyra" ]; then dirs_to_remove+=("$ORIGINAL_CALL_DIR/nuvyra"); fi
+    if [ -d "nuvyra" ]; then dirs_to_remove+=("$(pwd)/nuvyra"); fi
+    if [ -d "nuvyra" ]; then dirs_to_remove+=("$(pwd)/nuvyra"); fi
+    if [ -d "../nuvyra" ]; then dirs_to_remove+=("$(cd .. 2>/dev/null && pwd)/nuvyra"); fi
+    if [ -d "../nuvyra" ]; then dirs_to_remove+=("$(cd .. 2>/dev/null && pwd)/nuvyra"); fi
 
     for base in "$ORIGINAL_CALL_DIR" "$HOME" "/root" "/opt" "/var/www" "/srv"; do
-        if [ -d "$base/Jtg" ]; then dirs_to_remove+=("$base/Jtg"); fi
-        if [ -d "$base/jtg" ]; then dirs_to_remove+=("$base/jtg"); fi
+        if [ -d "$base/nuvyra" ]; then dirs_to_remove+=("$base/nuvyra"); fi
+        if [ -d "$base/nuvyra" ]; then dirs_to_remove+=("$base/nuvyra"); fi
     done
 
     local cur_name="$(basename "$TARGET_PANEL_DIR" 2>/dev/null || echo "")"
     case "$cur_name" in
         [Jj][Tt][Gg]*) dirs_to_remove+=("$TARGET_PANEL_DIR") ;;
     esac
-    if [ "$WORK_DIR" = "Jtg" ] && [ -d "$WORK_DIR" ]; then dirs_to_remove+=("$(cd "$WORK_DIR" 2>/dev/null && pwd)"); fi
+    if [ "$WORK_DIR" = "nuvyra" ] && [ -d "$WORK_DIR" ]; then dirs_to_remove+=("$(cd "$WORK_DIR" 2>/dev/null && pwd)"); fi
 
     cd /tmp 2>/dev/null || cd "$HOME" 2>/dev/null || cd /root 2>/dev/null || cd / 2>/dev/null || true
 
@@ -216,17 +216,17 @@ else
 fi
 
 execute_step "Removing Panel Runtime Files" clean_files
-execute_step "Deleting Jtg Directory" delete_jtg_directory
+execute_step "Deleting nuvyra Directory" delete_nuvyra_directory
 
 echo -e "\n${CYAN}${BOLD}"
 echo "╔══════════════════════════════════════════════╗"
 echo "║                                              ║"
 echo -e "║            ${GREEN}✓ UNINSTALL COMPLETE${CYAN}              ║"
 echo "║                                              ║"
-echo "║              JTG PANEL REMOVED               ║"
+echo "║              Nuvyra PANEL REMOVED               ║"
 echo "║                                              ║"
 echo "║  Runtime resources cleaned safely.           ║"
-echo "║  Jtg directory deleted successfully.         ║"
+echo "║  nuvyra directory deleted successfully.         ║"
 echo "║  Unrelated VPS data was preserved.           ║"
 echo "║                                              ║"
 echo "╚══════════════════════════════════════════════╝"

@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { readJSON, writeJSON } from "../services/db.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "jtg-panel-super-secret";
+const JWT_SECRET = process.env.JWT_SECRET || "nuvyra-panel-super-secret";
 
 export const register = async (req: Request, res: Response) => {
   const settings = await readJSON("settings.json") || {};
@@ -246,7 +246,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     return;
   }
 
-  // Derive username from Gmail (e.g. jishnumondal32@gmail.com -> jishnumondal32)
+  // Derive username from Gmail (e.g. Walksys@gmail.com -> Walksys)
   const emailPrefix = email.split("@")[0].replace(/[^a-zA-Z0-9_.]/g, "");
   const baseUsername = emailPrefix || "user";
 

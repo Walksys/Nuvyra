@@ -22,7 +22,7 @@ print_banner() {
     fi
     echo -e "${CYAN}${BOLD}"
     echo "================================================"
-    echo "        JTG PANEL SAFE UPDATE & REPAIR"
+    echo "        Nuvyra PANEL SAFE UPDATE & REPAIR"
     echo "================================================"
     echo -e "${NC}"
 }
@@ -80,7 +80,7 @@ get_compose_cmd() {
 execute_step() {
     local msg="$1"
     shift
-    local step_id="jtg_upd_$RANDOM"
+    local step_id="nuvyra_upd_$RANDOM"
     local log_file="/tmp/${step_id}.log"
     
     printf "  ${CYAN}→${NC} %-44s " "$msg"
@@ -131,9 +131,9 @@ if [ -d ".git" ]; then
 fi
 
 RUNTIME="Local Node.js"
-if (run_pm2 list 2>/dev/null | grep -qE "jtg-main|jtg-panel"); then
+if (run_pm2 list 2>/dev/null | grep -qE "nuvyra-main|nuvyra-panel"); then
     RUNTIME="Local Node.js"
-elif command -v docker &> /dev/null && docker ps -a --format '{{.Names}}' | grep -qE "^jtg-main$"; then
+elif command -v docker &> /dev/null && docker ps -a --format '{{.Names}}' | grep -qE "^nuvyra-main$"; then
     RUNTIME="Docker"
 fi
 
@@ -170,15 +170,15 @@ echo ""
 # 2. Stop Panel via PM2 First to release file locks & ports
 stop_panel_for_update() {
     # Stop PM2 processes if running
-    run_pm2 stop jtg-main 2>/dev/null || true
-    run_pm2 stop jtg-admin 2>/dev/null || true
-    run_pm2 stop jtg-panel 2>/dev/null || true
+    run_pm2 stop nuvyra-main 2>/dev/null || true
+    run_pm2 stop nuvyra-admin 2>/dev/null || true
+    run_pm2 stop nuvyra-panel 2>/dev/null || true
     
     # Stop Docker container if running
     if command -v docker > /dev/null 2>&1; then
         local DOCKER_CLI=$(get_docker_cmd)
-        $DOCKER_CLI stop jtg-main 2>/dev/null || true
-        $DOCKER_CLI stop jtg-admin 2>/dev/null || true
+        $DOCKER_CLI stop nuvyra-main 2>/dev/null || true
+        $DOCKER_CLI stop nuvyra-admin 2>/dev/null || true
     fi
     sleep 1
     return 0
@@ -187,7 +187,7 @@ stop_panel_for_update() {
 execute_step "Stopping panel service (PM2)" stop_panel_for_update
 
 # 3. Create Backup
-BACKUP_DIR=".backup/jtg_backup_$(date +"%Y%m%d_%H%M%S")"
+BACKUP_DIR=".backup/nuvyra_backup_$(date +"%Y%m%d_%H%M%S")"
 mkdir -p "$BACKUP_DIR"
 
 backup_data() {
@@ -431,7 +431,7 @@ if ! execute_step "Installing & updating npm packages" install_deps; then
     echo "Restoring from backup..."
     cp -r "$BACKUP_DIR/"* . 2>/dev/null || true
     # Restart panel on previous state
-    run_pm2 start ecosystem.config.cjs --only jtg-main 2>/dev/null || true
+    run_pm2 start ecosystem.config.cjs --only nuvyra-main 2>/dev/null || true
     exit 1
 fi
 
@@ -450,7 +450,7 @@ if ! execute_step "Building application bundle" build_app; then
     echo "Restoring from backup..."
     cp -r "$BACKUP_DIR/"* . 2>/dev/null || true
     cp -r "$BACKUP_DIR/src_backup/"* src/ 2>/dev/null || true
-    run_pm2 start ecosystem.config.cjs --only jtg-main 2>/dev/null || true
+    run_pm2 start ecosystem.config.cjs --only nuvyra-main 2>/dev/null || true
     exit 1
 fi
 
@@ -461,7 +461,7 @@ ensure_ecosystem_config() {
 module.exports = {
   apps: [
     {
-      name: "jtg-main",
+      name: "nuvyra-main",
       script: "npm",
       args: "start",
       instances: 1,
@@ -477,7 +477,7 @@ module.exports = {
       }
     },
     {
-      name: "jtg-admin",
+      name: "nuvyra-admin",
       script: "npm",
       args: "run dev",
       instances: 1,
@@ -503,7 +503,7 @@ ensure_ecosystem_config
 start_panel_after_update() {
     if [ "$RUNTIME" = "Docker" ]; then
         local COMPOSE_CMD=$(get_compose_cmd)
-        $COMPOSE_CMD up -d --build jtg-main
+        $COMPOSE_CMD up -d --build nuvyra-main
     else
         # Ensure docker socket permissions for local Minecraft server containers
         if [ -S "/var/run/docker.sock" ]; then
@@ -511,9 +511,9 @@ start_panel_after_update() {
         fi
         
         # Start panel via PM2 cleanly
-        run_pm2 delete jtg-panel >/dev/null 2>&1 || true
-        run_pm2 delete jtg-main >/dev/null 2>&1 || true
-        run_pm2 start ecosystem.config.cjs --only jtg-main
+        run_pm2 delete nuvyra-panel >/dev/null 2>&1 || true
+        run_pm2 delete nuvyra-main >/dev/null 2>&1 || true
+        run_pm2 start ecosystem.config.cjs --only nuvyra-main
         run_pm2 save --force >/dev/null 2>&1 || true
     fi
     return 0
@@ -560,7 +560,7 @@ IP=$(curl -s -m 2 ifconfig.me 2>/dev/null || curl -s -m 2 icanhazip.com 2>/dev/n
 
 echo ""
 echo -e "${GREEN}${BOLD}================================================${NC}"
-echo -e "${GREEN}${BOLD}     JTG PANEL SUCCESSFULLY UPDATED & VERIFIED  ${NC}"
+echo -e "${GREEN}${BOLD}     Nuvyra PANEL SUCCESSFULLY UPDATED & VERIFIED  ${NC}"
 echo -e "${GREEN}${BOLD}================================================${NC}"
 echo -e "  • Panel Status   : ${GREEN}ONLINE${NC}"
 echo -e "  • Web Address    : ${CYAN}http://${IP}:${PANEL_PORT}${NC}"

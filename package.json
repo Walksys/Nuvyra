@@ -73,7 +73,7 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.3"
   },
-  "description": "Made by Jishnu",
+  "description": "Made by Walksys",
   "main": "inspect_docker.js",
   "keywords": [],
   "author": "",

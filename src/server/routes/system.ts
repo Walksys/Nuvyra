@@ -16,7 +16,7 @@ router.get("/version", async (req, res) => {
   res.json({
     currentVersion: "3.0.0",
     latestVersion: "3.0.0",
-    panel: "JTG Panel",
+    panel: "Nuvyra Panel",
     runtime: process.env.DEFAULT_RUNTIME || "docker",
     mainPort: 6767,
     devPort: 3000
@@ -253,7 +253,7 @@ router.put("/settings", async (req, res) => {
   } = req.body;
   const settings = await readJSON("settings.json") || {};
   if (panelName !== undefined) {
-    settings.panelName = panelName || "JTG Panel";
+    settings.panelName = panelName || "Nuvyra Panel";
     try {
       const fs = await import("fs/promises");
       const path = await import("path");
@@ -319,8 +319,8 @@ router.post("/update", async (req, res) => {
   const fs = await import("fs");
   setTimeout(() => {
     try {
-      const outLog = fs.openSync("/tmp/jtg_update.log", "a");
-      const errLog = fs.openSync("/tmp/jtg_update.log", "a");
+      const outLog = fs.openSync("/tmp/nuvyra_update.log", "a");
+      const errLog = fs.openSync("/tmp/nuvyra_update.log", "a");
       const child = spawn("bash", ["update.sh"], {
         detached: true,
         stdio: ["ignore", outLog, errLog],
@@ -340,7 +340,7 @@ router.get("/update-status", async (req, res) => {
 
   try {
     const fs = await import("fs/promises");
-    const logContent = await fs.readFile("/tmp/jtg_update.log", "utf-8");
+    const logContent = await fs.readFile("/tmp/nuvyra_update.log", "utf-8");
     const lines = logContent.split("\n");
     const recentLines = lines.slice(-40).join("\n");
     res.json({ success: true, logs: recentLines });

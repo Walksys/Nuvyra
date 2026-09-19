@@ -845,7 +845,7 @@ export default function AdminSettingsPage(): React.ReactElement {
                                 setNewDefaultRuntime("docker");
                                 if (setDefaultRuntime) setDefaultRuntime("docker");
                                 try {
-                                  const token = localStorage.getItem("jtg_token") || localStorage.getItem("token");
+                                  const token = localStorage.getItem("nuvyra_token") || localStorage.getItem("token");
                                   const headers: any = {};
                                   if (token) headers["Authorization"] = `Bearer ${token}`;
                                   await axios.put("/api/system/settings", { defaultRuntime: "docker" }, { headers });
@@ -904,7 +904,7 @@ export default function AdminSettingsPage(): React.ReactElement {
                                 setNewDefaultRuntime("local");
                                 if (setDefaultRuntime) setDefaultRuntime("local");
                                 try {
-                                  const token = localStorage.getItem("jtg_token") || localStorage.getItem("token");
+                                  const token = localStorage.getItem("nuvyra_token") || localStorage.getItem("token");
                                   const headers: any = {};
                                   if (token) headers["Authorization"] = `Bearer ${token}`;
                                   await axios.put("/api/system/settings", { defaultRuntime: "local" }, { headers });
@@ -1213,7 +1213,7 @@ export default function AdminSettingsPage(): React.ReactElement {
                 </div>
               </div>
               <p className="text-muted-foreground text-sm mb-6 max-w-2xl">
-                Trigger an automatic update of the JTG Panel. This will run git pull and rebuild the system. The panel will be unavailable for a few seconds during this process.
+                Trigger an automatic update of the Nuvyra Panel. This will run git pull and rebuild the system. The panel will be unavailable for a few seconds during this process.
               </p>
               <button 
                 onClick={handleSystemUpdate}

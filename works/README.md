@@ -1,8 +1,8 @@
-# JTG Panel — System Architecture & Works Documentation
+# Nuvyra Panel — System Architecture & Works Documentation
 
 ## 1. Overview & Architecture
 
-JTG Panel is a modern, high-performance Game Server Management Panel designed for Minecraft and related game servers.
+Nuvyra Panel is a modern, high-performance Game Server Management Panel designed for Minecraft and related game servers.
 
 ### Architectural Layers
 - **Frontend**: React 18 with TypeScript, Tailwind CSS, Lucide icons, Socket.IO client, and Axios.
@@ -83,7 +83,7 @@ npm run createuser
 ```
 Or via non-interactive environment variables:
 ```bash
-JTG_OWNER_USER="admin" JTG_OWNER_PASS="YourSecurePassword123" npm run createuser
+Nuvyra_OWNER_USER="admin" Nuvyra_OWNER_PASS="YourSecurePassword123" npm run createuser
 ```
 
 ### Dev Server

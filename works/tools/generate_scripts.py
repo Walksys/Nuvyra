@@ -2,7 +2,7 @@ import os
 
 install_script = '''#!/bin/bash
 # =========================================================
-# JTG Panel - Automated Installation & Management Script
+# Nuvyra Panel - Automated Installation & Management Script
 # =========================================================
 
 # Ensure running in bash
@@ -22,11 +22,11 @@ NC='\\033[0m'
 
 if [ -f "package.json" ]; then
     WORK_DIR="."
-elif [ -d "Jtg" ] && [ -f "Jtg/package.json" ]; then
-    WORK_DIR="Jtg"
+elif [ -d "nuvyra" ] && [ -f "nuvyra/package.json" ]; then
+    WORK_DIR="nuvyra"
 else
-    git clone https://github.com/JishnuTheGamer/Jtg Jtg 2>/dev/null || true
-    WORK_DIR="Jtg"
+    git clone https://github.com/Walksys/nuvyra nuvyra 2>/dev/null || true
+    WORK_DIR="nuvyra"
 fi
 cd "$WORK_DIR" || true
 
@@ -54,7 +54,7 @@ print_banner() {
     echo "║     ██║   ██║   ╚██████╔╝                    ║"
     echo "║     ╚═╝   ╚═╝    ╚═════╝                     ║"
     echo "║                                              ║"
-    echo "║              JTG PANEL INSTALLER             ║"
+    echo "║              Nuvyra PANEL INSTALLER             ║"
     echo "║                                              ║"
     echo "╚══════════════════════════════════════════════╝"
     echo -e "${NC}"
@@ -103,7 +103,7 @@ get_compose_cmd() {
 execute_step() {
     local msg="$1"
     shift
-    local step_id="jtg_step_$RANDOM"
+    local step_id="nuvyra_step_$RANDOM"
     local log_file="/tmp/${step_id}.log"
     rm -f "$log_file"
     
@@ -321,9 +321,9 @@ EOF2
         cat << 'EOF2' > docker-compose.yml
 version: '3.8'
 services:
-  jtg-main:
+  nuvyra-main:
     build: .
-    container_name: jtg-main
+    container_name: nuvyra-main
     restart: unless-stopped
     ports:
       - "6767:6767"
@@ -331,17 +331,17 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=6767
-      - JTG_HOST_DATA_PATH=${PWD}/.data
-      - JTG_OWNER_USER=${JTG_OWNER_USER:-}
-      - JTG_OWNER_PASS=${JTG_OWNER_PASS:-}
+      - Nuvyra_HOST_DATA_PATH=${PWD}/.data
+      - Nuvyra_OWNER_USER=${Nuvyra_OWNER_USER:-}
+      - Nuvyra_OWNER_PASS=${Nuvyra_OWNER_PASS:-}
     volumes:
       - ./.data:/app/.data
       - ./backups:/app/backups
       - /var/run/docker.sock:/var/run/docker.sock
 
-  jtg-admin:
+  nuvyra-admin:
     build: .
-    container_name: jtg-admin
+    container_name: nuvyra-admin
     restart: unless-stopped
     command: npm run dev
     ports:
@@ -350,9 +350,9 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - JTG_HOST_DATA_PATH=${PWD}/.data
-      - JTG_OWNER_USER=${JTG_OWNER_USER:-}
-      - JTG_OWNER_PASS=${JTG_OWNER_PASS:-}
+      - Nuvyra_HOST_DATA_PATH=${PWD}/.data
+      - Nuvyra_OWNER_USER=${Nuvyra_OWNER_USER:-}
+      - Nuvyra_OWNER_PASS=${Nuvyra_OWNER_PASS:-}
     volumes:
       - ./.data:/app/.data
       - ./backups:/app/backups
@@ -391,7 +391,7 @@ setup_node_env() {
 module.exports = {
   apps: [
     {
-      name: "jtg-main",
+      name: "nuvyra-main",
       script: "npm",
       args: "start",
       instances: 1,
@@ -407,7 +407,7 @@ module.exports = {
       }
     },
     {
-      name: "jtg-admin",
+      name: "nuvyra-admin",
       script: "npm",
       args: "run dev",
       instances: 1,
@@ -444,10 +444,10 @@ setup_owner() {
 
 setup_owner_docker() {
     local TARGET=$1
-    if [ -n "$JTG_OWNER_USER" ] && [ -n "$JTG_OWNER_PASS" ]; then
+    if [ -n "$Nuvyra_OWNER_USER" ] && [ -n "$Nuvyra_OWNER_PASS" ]; then
         local DOCKER_CLI=$(get_docker_cmd)
         sleep 2
-        $DOCKER_CLI exec -e JTG_OWNER_USER="$JTG_OWNER_USER" -e JTG_OWNER_PASS="$JTG_OWNER_PASS" "$TARGET" npm run createuser 2>&1 || {
+        $DOCKER_CLI exec -e Nuvyra_OWNER_USER="$Nuvyra_OWNER_USER" -e Nuvyra_OWNER_PASS="$Nuvyra_OWNER_PASS" "$TARGET" npm run createuser 2>&1 || {
             if command -v node &> /dev/null && [ -f "scripts/createuser.ts" ] && [ -d "node_modules" ]; then
                 npm run createuser 2>&1 || true
             fi
@@ -473,8 +473,8 @@ start_panel_docker() {
     # Free up port from PM2 if it was previously running under local Node.js
     if command -v pm2 &> /dev/null || [ -f "node_modules/.bin/pm2" ]; then
         run_pm2 delete "$TARGET" > /dev/null 2>&1 || true
-        if [ "$TARGET" = "jtg-main" ]; then
-            run_pm2 delete "jtg-panel" > /dev/null 2>&1 || true
+        if [ "$TARGET" = "nuvyra-main" ]; then
+            run_pm2 delete "nuvyra-panel" > /dev/null 2>&1 || true
         fi
     fi
 
@@ -525,11 +525,11 @@ start_panel_docker() {
 
 start_panel_node() {
     local TARGET=$1
-    if [ "$TARGET" = "jtg-main" ]; then
-        run_pm2 delete jtg-panel 2>/dev/null || true
+    if [ "$TARGET" = "nuvyra-main" ]; then
+        run_pm2 delete nuvyra-panel 2>/dev/null || true
         # Clean up conflicting Docker container if previously running via Docker
         local DOCKER_CLI=$(get_docker_cmd)
-        $DOCKER_CLI rm -f jtg-main jtg-panel 2>/dev/null || true
+        $DOCKER_CLI rm -f nuvyra-main nuvyra-panel 2>/dev/null || true
     fi
     # Ensure Docker daemon is running and socket accessible for Minecraft containers
     if command -v systemctl &> /dev/null; then
@@ -611,15 +611,15 @@ show_status() {
     local DEV_STATUS="OFF"
     local SFTP_STATUS="OFF"
     
-    if (run_pm2 list 2>/dev/null | grep "jtg-main" | grep -q "online") || \
-       (command -v docker &> /dev/null && docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^jtg-main$") || \
-       curl -s -m 2 http://127.0.0.1:6767/api/health 2>/dev/null | grep -q "JTG Panel"; then
+    if (run_pm2 list 2>/dev/null | grep "nuvyra-main" | grep -q "online") || \
+       (command -v docker &> /dev/null && docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^nuvyra-main$") || \
+       curl -s -m 2 http://127.0.0.1:6767/api/health 2>/dev/null | grep -q "Nuvyra Panel"; then
         MAIN_STATUS="ONLINE"
     fi
     
-    if (run_pm2 list 2>/dev/null | grep "jtg-admin" | grep -q "online") || \
-       (command -v docker &> /dev/null && docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^jtg-admin$") || \
-       curl -s -m 2 http://127.0.0.1:3000/api/health 2>/dev/null | grep -q "JTG Panel"; then
+    if (run_pm2 list 2>/dev/null | grep "nuvyra-admin" | grep -q "online") || \
+       (command -v docker &> /dev/null && docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^nuvyra-admin$") || \
+       curl -s -m 2 http://127.0.0.1:3000/api/health 2>/dev/null | grep -q "Nuvyra Panel"; then
         DEV_STATUS="ONLINE"
     fi
     
@@ -630,7 +630,7 @@ show_status() {
     local IP=$(curl -s -m 2 ifconfig.me 2>/dev/null || curl -s -m 2 icanhazip.com 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo "localhost")
 
     echo -e "\n${CYAN}${BOLD}╔══════════════════════════════════════════════╗"
-    echo -e "║              JTG PANEL STATUS                ║"
+    echo -e "║              Nuvyra PANEL STATUS                ║"
     echo -e "╠══════════════════════════════════════════════╣${NC}"
     echo -e "║"
     if [ "$MAIN_STATUS" = "ONLINE" ]; then
@@ -658,12 +658,12 @@ install_panel() {
     local TARGET=$1
     local PANEL_NAME="Main Panel"
     local PORT="6767"
-    local SERVICE_NAME="jtg-main"
+    local SERVICE_NAME="nuvyra-main"
     
     if [ "$TARGET" = "dev" ]; then
         PANEL_NAME="Developer Panel"
         PORT="3000"
-        SERVICE_NAME="jtg-admin"
+        SERVICE_NAME="nuvyra-admin"
     fi
 
     print_banner
@@ -710,9 +710,9 @@ install_panel() {
         local OWNER_PASS=""
         local OWNER_PASS2=""
         
-        if [ -n "$JTG_OWNER_USER" ] && [ -n "$JTG_OWNER_PASS" ]; then
-            OWNER_USER="$JTG_OWNER_USER"
-            OWNER_PASS="$JTG_OWNER_PASS"
+        if [ -n "$Nuvyra_OWNER_USER" ] && [ -n "$Nuvyra_OWNER_PASS" ]; then
+            OWNER_USER="$Nuvyra_OWNER_USER"
+            OWNER_PASS="$Nuvyra_OWNER_PASS"
         elif [ ! -t 0 ]; then
             OWNER_USER="owner"
             OWNER_PASS="owner12345"
@@ -742,8 +742,8 @@ install_panel() {
         fi
         echo -e "╚══════════════════════════════════════════════╝"
         
-        export JTG_OWNER_USER="$OWNER_USER"
-        export JTG_OWNER_PASS="$OWNER_PASS"
+        export Nuvyra_OWNER_USER="$OWNER_USER"
+        export Nuvyra_OWNER_PASS="$OWNER_PASS"
     fi
     
     # Environment Setup
@@ -774,12 +774,12 @@ install_panel() {
         if [ "$TARGET" = "main" ]; then
             execute_step "Owner Account Setup" setup_owner
             execute_step "Building Application" build_application
-            execute_step "Starting PM2 Service" start_panel_node jtg-main
-            execute_step "Waiting for Application & Port 6767" health_check 6767 pm2 jtg-main
+            execute_step "Starting PM2 Service" start_panel_node nuvyra-main
+            execute_step "Waiting for Application & Port 6767" health_check 6767 pm2 nuvyra-main
         else
             execute_step "Building Application" build_application
-            execute_step "Starting PM2 Service" start_panel_node jtg-admin
-            execute_step "Waiting for Application & Port 3000" health_check 3000 pm2 jtg-admin
+            execute_step "Starting PM2 Service" start_panel_node nuvyra-admin
+            execute_step "Waiting for Application & Port 3000" health_check 3000 pm2 nuvyra-admin
         fi
     fi
     
@@ -787,10 +787,10 @@ install_panel() {
 
     local IP=$(curl -s -m 2 ifconfig.me 2>/dev/null || curl -s -m 2 icanhazip.com 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo "localhost")
     if [ "$TARGET" = "main" ]; then
-        log_success "JTG Main Panel installation is complete and verified!"
+        log_success "Nuvyra Main Panel installation is complete and verified!"
         echo -e "${GREEN}✓ You can now open http://${IP}:6767 and log in with '${OWNER_USER}'.${NC}\n"
     else
-        log_success "JTG Developer Panel installation is complete and verified!"
+        log_success "Nuvyra Developer Panel installation is complete and verified!"
         echo -e "${GREEN}✓ Developer Panel running on http://${IP}:3000.${NC}\n"
     fi
 }
@@ -836,8 +836,8 @@ create_owner_user() {
         fi
     done
     
-    export JTG_OWNER_USER="$OWNER_USER"
-    export JTG_OWNER_PASS="$OWNER_PASS"
+    export Nuvyra_OWNER_USER="$OWNER_USER"
+    export Nuvyra_OWNER_PASS="$OWNER_PASS"
     execute_step "Setting up Owner Account" setup_owner
     log_success "Owner user setup completed successfully!"
 }
@@ -863,9 +863,9 @@ while true; do
     print_banner
     echo -e "  ${BOLD}1)${NC} Initialize Main Panel"
     echo -e "  ${BOLD}2)${NC} Initialize Developer Panel"
-    echo -e "  ${BOLD}3)${NC} Update JTG Panel"
+    echo -e "  ${BOLD}3)${NC} Update Nuvyra Panel"
     echo -e "  ${BOLD}4)${NC} Create Owner"
-    echo -e "  ${BOLD}5)${NC} Uninstall JTG Panel"
+    echo -e "  ${BOLD}5)${NC} Uninstall Nuvyra Panel"
     echo -e "  ${BOLD}6)${NC} Exit"
     echo -e "\\n========================================================"
     if ! read -p " Choose an option (1-6): " CHOICE; then
@@ -907,7 +907,7 @@ done
 
 uninstall_script = '''#!/bin/bash
 # =========================================================
-# JTG Panel - Automated Uninstall Script
+# Nuvyra Panel - Automated Uninstall Script
 # =========================================================
 
 # Ensure running in bash
@@ -925,8 +925,8 @@ NC='\\033[0m'
 
 if [ -f "package.json" ]; then
     WORK_DIR="."
-elif [ -d "Jtg" ] && [ -f "Jtg/package.json" ]; then
-    WORK_DIR="Jtg"
+elif [ -d "nuvyra" ] && [ -f "nuvyra/package.json" ]; then
+    WORK_DIR="nuvyra"
 else
     WORK_DIR="."
 fi
@@ -938,7 +938,7 @@ print_banner() {
     fi
     echo -e "${CYAN}${BOLD}"
     echo "╔══════════════════════════════════════════════╗"
-    echo "║             JTG PANEL UNINSTALLER            ║"
+    echo "║             Nuvyra PANEL UNINSTALLER            ║"
     echo "╠══════════════════════════════════════════════╣"
     echo -e "${NC}"
 }
@@ -960,7 +960,7 @@ run_pm2() {
 execute_step() {
     local msg="$1"
     shift
-    local step_id="jtg_uninst_$RANDOM"
+    local step_id="nuvyra_uninst_$RANDOM"
     local log_file="/tmp/${step_id}.log"
     
     printf "  ${CYAN}→${NC} %-42s " "$msg"
@@ -1016,9 +1016,9 @@ RUNTIME="Unknown"
 if [ "$UN_CHOICE" = "1" ]; then RUNTIME="Docker"; fi
 if [ "$UN_CHOICE" = "2" ]; then RUNTIME="Local Node.js"; fi
 if [ "$UN_CHOICE" = "3" ]; then
-    if (run_pm2 list 2>/dev/null | grep -q "jtg-main") || (run_pm2 list 2>/dev/null | grep -q "jtg-admin") || (run_pm2 list 2>/dev/null | grep -q "jtg-panel"); then
+    if (run_pm2 list 2>/dev/null | grep -q "nuvyra-main") || (run_pm2 list 2>/dev/null | grep -q "nuvyra-admin") || (run_pm2 list 2>/dev/null | grep -q "nuvyra-panel"); then
         RUNTIME="Local Node.js"
-    elif command -v docker &> /dev/null && docker ps -a --format '{{.Names}}' | grep -qE "^(jtg-main|jtg-admin)$"; then
+    elif command -v docker &> /dev/null && docker ps -a --format '{{.Names}}' | grep -qE "^(nuvyra-main|nuvyra-admin)$"; then
         RUNTIME="Docker"
     else
         RUNTIME="Local Node.js"
@@ -1038,10 +1038,10 @@ fi
 
 print_banner
 echo "║ Runtime: $RUNTIME"
-echo "║ Panel: JTG Panel"
+echo "║ Panel: Nuvyra Panel"
 echo "║ Owner: $OWNER"
 echo "║"
-echo "║ Are you sure you want to uninstall JTG Panel?║"
+echo "║ Are you sure you want to uninstall Nuvyra Panel?║"
 echo "║ 1) Yes, continue                             ║"
 echo "║ 2) No, cancel                                ║"
 echo "╚══════════════════════════════════════════════╝"
@@ -1071,12 +1071,12 @@ stop_docker() {
     elif command -v docker-compose &> /dev/null; then
         docker-compose down || true
     fi
-    $DOCKER_CLI rm -f jtg-main jtg-admin 2>/dev/null || true
-    $DOCKER_CLI rmi jtg-main jtg-admin 2>/dev/null || true
+    $DOCKER_CLI rm -f nuvyra-main nuvyra-admin 2>/dev/null || true
+    $DOCKER_CLI rmi nuvyra-main nuvyra-admin 2>/dev/null || true
 }
 
 stop_pm2() {
-    run_pm2 delete jtg-main jtg-admin jtg-panel 2>/dev/null || true
+    run_pm2 delete nuvyra-main nuvyra-admin nuvyra-panel 2>/dev/null || true
     run_pm2 save --force 2>/dev/null || true
 }
 
@@ -1084,25 +1084,25 @@ clean_files() {
     rm -rf node_modules dist .logs package-lock.json
 }
 
-delete_jtg_directory() {
+delete_nuvyra_directory() {
     local dirs_to_remove=()
-    if [ -n "$ORIGINAL_CALL_DIR" ] && [ -d "$ORIGINAL_CALL_DIR/Jtg" ]; then dirs_to_remove+=("$ORIGINAL_CALL_DIR/Jtg"); fi
-    if [ -n "$ORIGINAL_CALL_DIR" ] && [ -d "$ORIGINAL_CALL_DIR/jtg" ]; then dirs_to_remove+=("$ORIGINAL_CALL_DIR/jtg"); fi
-    if [ -d "Jtg" ]; then dirs_to_remove+=("$(pwd)/Jtg"); fi
-    if [ -d "jtg" ]; then dirs_to_remove+=("$(pwd)/jtg"); fi
-    if [ -d "../Jtg" ]; then dirs_to_remove+=("$(cd .. 2>/dev/null && pwd)/Jtg"); fi
-    if [ -d "../jtg" ]; then dirs_to_remove+=("$(cd .. 2>/dev/null && pwd)/jtg"); fi
+    if [ -n "$ORIGINAL_CALL_DIR" ] && [ -d "$ORIGINAL_CALL_DIR/nuvyra" ]; then dirs_to_remove+=("$ORIGINAL_CALL_DIR/nuvyra"); fi
+    if [ -n "$ORIGINAL_CALL_DIR" ] && [ -d "$ORIGINAL_CALL_DIR/nuvyra" ]; then dirs_to_remove+=("$ORIGINAL_CALL_DIR/nuvyra"); fi
+    if [ -d "nuvyra" ]; then dirs_to_remove+=("$(pwd)/nuvyra"); fi
+    if [ -d "nuvyra" ]; then dirs_to_remove+=("$(pwd)/nuvyra"); fi
+    if [ -d "../nuvyra" ]; then dirs_to_remove+=("$(cd .. 2>/dev/null && pwd)/nuvyra"); fi
+    if [ -d "../nuvyra" ]; then dirs_to_remove+=("$(cd .. 2>/dev/null && pwd)/nuvyra"); fi
 
     for base in "$ORIGINAL_CALL_DIR" "$HOME" "/root" "/opt" "/var/www" "/srv"; do
-        if [ -d "$base/Jtg" ]; then dirs_to_remove+=("$base/Jtg"); fi
-        if [ -d "$base/jtg" ]; then dirs_to_remove+=("$base/jtg"); fi
+        if [ -d "$base/nuvyra" ]; then dirs_to_remove+=("$base/nuvyra"); fi
+        if [ -d "$base/nuvyra" ]; then dirs_to_remove+=("$base/nuvyra"); fi
     done
 
     local cur_name="$(basename "$TARGET_PANEL_DIR" 2>/dev/null || echo "")"
     case "$cur_name" in
         [Jj][Tt][Gg]*) dirs_to_remove+=("$TARGET_PANEL_DIR") ;;
     esac
-    if [ "$WORK_DIR" = "Jtg" ] && [ -d "$WORK_DIR" ]; then dirs_to_remove+=("$(cd "$WORK_DIR" 2>/dev/null && pwd)"); fi
+    if [ "$WORK_DIR" = "nuvyra" ] && [ -d "$WORK_DIR" ]; then dirs_to_remove+=("$(cd "$WORK_DIR" 2>/dev/null && pwd)"); fi
 
     cd /tmp 2>/dev/null || cd "$HOME" 2>/dev/null || cd /root 2>/dev/null || cd / 2>/dev/null || true
 
@@ -1123,17 +1123,17 @@ else
 fi
 
 execute_step "Removing Panel Runtime Files" clean_files
-execute_step "Deleting Jtg Directory" delete_jtg_directory
+execute_step "Deleting nuvyra Directory" delete_nuvyra_directory
 
 echo -e "\\n${CYAN}${BOLD}"
 echo "╔══════════════════════════════════════════════╗"
 echo "║                                              ║"
 echo -e "║            ${GREEN}✓ UNINSTALL COMPLETE${CYAN}              ║"
 echo "║                                              ║"
-echo "║              JTG PANEL REMOVED               ║"
+echo "║              Nuvyra PANEL REMOVED               ║"
 echo "║                                              ║"
 echo "║  Runtime resources cleaned safely.           ║"
-echo "║  Jtg directory deleted successfully.         ║"
+echo "║  nuvyra directory deleted successfully.         ║"
 echo "║  Unrelated VPS data was preserved.           ║"
 echo "║                                              ║"
 echo "╚══════════════════════════════════════════════╝"
@@ -1162,7 +1162,7 @@ print_banner() {
     fi
     echo -e "${CYAN}${BOLD}"
     echo "================================================"
-    echo "        JTG PANEL SAFE UPDATE"
+    echo "        Nuvyra PANEL SAFE UPDATE"
     echo "================================================"
     echo -e "${NC}"
 }
@@ -1184,7 +1184,7 @@ run_pm2() {
 execute_step() {
     local msg="$1"
     shift
-    local step_id="jtg_upd_$RANDOM"
+    local step_id="nuvyra_upd_$RANDOM"
     local log_file="/tmp/${step_id}.log"
     
     printf "  ${CYAN}→${NC} %-42s " "$msg"
@@ -1233,9 +1233,9 @@ else
 fi
 
 RUNTIME="Unknown"
-if (run_pm2 list 2>/dev/null | grep -q "jtg-main"); then
+if (run_pm2 list 2>/dev/null | grep -q "nuvyra-main"); then
     RUNTIME="Local Node.js"
-elif command -v docker &> /dev/null && docker ps -a --format '{{.Names}}' | grep -qE "^jtg-main$"; then
+elif command -v docker &> /dev/null && docker ps -a --format '{{.Names}}' | grep -qE "^nuvyra-main$"; then
     RUNTIME="Docker"
 fi
 
@@ -1262,7 +1262,7 @@ fi
 echo ""
 
 # 2. Backup
-BACKUP_DIR=".backup/jtg_backup_$(date +"%Y%m%d_%H%M%S")"
+BACKUP_DIR=".backup/nuvyra_backup_$(date +"%Y%m%d_%H%M%S")"
 mkdir -p "$BACKUP_DIR"
 
 backup_data() {
@@ -1323,7 +1323,7 @@ restart_service() {
         else
             COMPOSE_CMD="$DOCKER_CLI compose"
         fi
-        $COMPOSE_CMD up -d --build jtg-main
+        $COMPOSE_CMD up -d --build nuvyra-main
     elif [ "$RUNTIME" = "Local Node.js" ]; then
         if command -v systemctl &> /dev/null; then
             systemctl start docker 2>/dev/null || sudo systemctl start docker 2>/dev/null || true
@@ -1333,7 +1333,7 @@ restart_service() {
         if [ -S "/var/run/docker.sock" ]; then
             chmod 666 /var/run/docker.sock 2>/dev/null || sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
         fi
-        run_pm2 restart jtg-main || run_pm2 start ecosystem.config.cjs --only jtg-main
+        run_pm2 restart nuvyra-main || run_pm2 start ecosystem.config.cjs --only nuvyra-main
         run_pm2 save --force 2>/dev/null || true
     fi
 }
@@ -1362,7 +1362,7 @@ if ! execute_step "Health check" health_check_step; then
     exit 1
 fi
 
-echo -e "\\n${GREEN}[SUCCESS]${NC} JTG Panel updated and verified successfully!"
+echo -e "\\n${GREEN}[SUCCESS]${NC} Nuvyra Panel updated and verified successfully!"
 '''
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

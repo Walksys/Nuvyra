@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "jtg-main",
+      name: "nuvyra-main",
       script: "npm",
       args: "start",
       instances: 1,
@@ -17,7 +17,7 @@ module.exports = {
       }
     },
     {
-      name: "jtg-admin",
+      name: "nuvyra-admin",
       script: "npm",
       args: "run dev",
       instances: 1,
